@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>微生物与免疫 · 护眼刷题</title>
+    <style>
+        /* 全局重置 & 护眼深色主题 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #1a1d23;
+            /* 深灰蓝底 */;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #e8edf5;
+        }
+
+        .app-container {
+            max-width: 820px;
+            width: 100%;
+            background: #242830;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            padding: 28px 30px 30px;
+            border: 1px solid #333942;
+            transition: all 0.2s;
+        }
+
+        /* 头部 */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .app-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f0f4fa;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #d4b68a, #f0d5b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-header .stats {
+            font-size: 14px;
+            color: #a8b8c8;
+            background: #2e333d;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: 500;
+            border: 1px solid #3f4552;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: #2e333d;
+            border-radius: 10px;
+            margin: 16px 0 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5cb87a, #d4b68a);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        /* 章节标签 */
+        .chapter-tag {
+            display: inline-block;
+            background: #2e333d;
+            color: #b8c8d8;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 16px;
+            border-radius: 30px;
+            letter-spacing: 0.5px;
+            margin-bottom: 18px;
+            border: 1px solid #3f4552;
+        }
+
+        /* 题目区域 */
+        .question-number {
+            font-size: 15px;
+            font-weight: 600;
+            color: #d4b68a;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.8;
+            color: #f0f4fa;
+            margin-bottom: 26px;
+            padding-right: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        /* 选项列表 */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 22px;
+            background: #1e222a;
+            border: 2px solid #2e333d;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 17px;
+            color: #dce4ed;
+            font-weight: 450;
+            line-height: 1.5;
+        }
+
+        .option-item:hover:not(.disabled) {
+            background: #2a2f3a;
+            border-color: #4a515f;
+            transform: translateY(-1px);
+        }
+
+        .option-item .label {
+            font-weight: 700;
+            color: #b0c0d0;
+            min-width: 28px;
+            font-size: 16px;
+        }
+
+        .option-item .text {
+            flex: 1;
+        }
+
+        /* 状态样式 —— 柔和不刺眼 */
+        .option-item.correct {
+            background: #1e3328;
+            border-color: #5cb87a;
+            box-shadow: 0 0 0 1px rgba(92, 184, 122, 0.2);
+        }
+        .option-item.correct .label {
+            color: #7ddfa0;
+        }
+
+        .option-item.wrong {
+            background: #3a2424;
+            border-color: #e0695a;
+            box-shadow: 0 0 0 1px rgba(224, 105, 90, 0.2);
+        }
+        .option-item.wrong .label {
+            color: #f58a7a;
+        }
+
+        .option-item.disabled {
+            cursor: default;
+            opacity: 0.8;
+        }
+        .option-item.disabled:hover {
+            transform: none;
+            background: #1e222a;
+            border-color: #2e333d;
+        }
+        .option-item.correct.disabled {
+            opacity: 1;
+            background: #1e3328;
+            border-color: #5cb87a;
+        }
+        .option-item.wrong.disabled {
+            opacity: 1;
+            background: #3a2424;
+            border-color: #e0695a;
+        }
+
+        /* 反馈框 */
+        .feedback-box {
+            padding: 16px 22px;
+            border-radius: 16px;
+            margin-bottom: 26px;
+            font-size: 16px;
+            font-weight: 500;
+            display: none;
+            background: #1e222a;
+            border-left: 6px solid #5cb87a;
+            color: #c8d8e8;
+            line-height: 1.6;
+        }
+        .feedback-box.show {
+            display: block;
+        }
+        .feedback-box.correct {
+            background: #1a2a22;
+            border-left-color: #5cb87a;
+            color: #b0e0c0;
+        }
+        .feedback-box.wrong {
+            background: #2e1e1e;
+            border-left-color: #e0695a;
+            color: #f0c0b0;
+        }
+
+        /* 导航栏 */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-top: 2px solid #2e333d;
+            padding-top: 22px;
+            margin-top: 6px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #2e333d;
+            color: #c8d8e8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 110px;
+            justify-content: center;
+            border: 1px solid #3f4552;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #3f4552;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .nav-btn.primary {
+            background: #d4b68a;
+            color: #1a1d23;
+            border-color: #d4b68a;
+        }
+        .nav-btn.primary:hover:not(:disabled) {
+            background: #e8cba0;
+            border-color: #e8cba0;
+        }
+
+        .nav-btn .icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .question-counter {
+            font-size: 15px;
+            color: #a8b8c8;
+            font-weight: 500;
+            background: #1e222a;
+            padding: 6px 20px;
+            border-radius: 40px;
+            white-space: nowrap;
+            border: 1px solid #2e333d;
+        }
+
+        /* 错题本开关 */
+        .wrong-book-toggle {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .wrong-book-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 22px;
+            border-radius: 40px;
+            border: 1px solid #3f4552;
+            background: #1e222a;
+            font-size: 15px;
+            font-weight: 600;
+            color: #c8d8e8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wrong-book-btn:hover {
+            background: #2a2f3a;
+            border-color: #5a6270;
+        }
+
+        .wrong-book-btn .badge {
+            background: #e0695a;
+            color: #fff;
+            border-radius: 30px;
+            padding: 0 12px;
+            font-size: 13px;
+            line-height: 22px;
+            font-weight: 700;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* 错题面板 */
+        .wrong-panel {
+            margin-top: 18px;
+            border-top: 2px solid #2e333d;
+            padding-top: 20px;
+            display: none;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .wrong-panel.open {
+            display: block;
+        }
+
+        .wrong-panel h3 {
+            font-size: 17px;
+            color: #d4b68a;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wrong-panel .empty-msg {
+            color: #788898;
+            font-size: 16px;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .wrong-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: #1e222a;
+            border-radius: 14px;
+            border: 1px solid #2e333d;
+            margin-bottom: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.15s ease;
+            color: #dce4ed;
+        }
+
+        .wrong-item:hover {
+            background: #2a2f3a;
+            border-color: #4a515f;
+        }
+
+        .wrong-item .q-preview {
+            flex: 1;
+            color: #c8d8e8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 14px;
+        }
+
+        .wrong-item .q-idx {
+            font-weight: 700;
+            color: #d4b68a;
+            margin-right: 14px;
+            font-size: 14px;
+        }
+
+        .wrong-item .remove-btn {
+            background: none;
+            border: none;
+            color: #5a6270;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 6px;
+            transition: 0.15s ease;
+            line-height: 1;
+        }
+        .wrong-item .remove-btn:hover {
+            color: #e0695a;
+        }
+
+        /* 滚动条 */
+        .wrong-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+        .wrong-panel::-webkit-scrollbar-track {
+            background: #1e222a;
+            border-radius: 10px;
+        }
+        .wrong-panel::-webkit-scrollbar-thumb {
+            background: #3f4552;
+            border-radius: 10px;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .app-container {
+                padding: 18px 16px 22px;
+                border-radius: 24px;
+            }
+            .question-text {
+                font-size: 18px;
+            }
+            .option-item {
+                padding: 14px 16px;
+                font-size: 16px;
+                gap: 12px;
+            }
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 15px;
+                min-width: 80px;
+            }
+            .app-header h1 {
+                font-size: 20px;
+            }
+            .nav-bar {
+                gap: 6px;
+            }
+            .question-counter {
+                font-size: 14px;
+                padding: 4px 14px;
+            }
+            .wrong-item {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .app-container {
+                padding: 14px 12px 18px;
+            }
+            .question-text {
+                font-size: 17px;
+            }
+            .option-item {
+                padding: 12px 14px;
+                font-size: 15px;
+            }
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+                min-width: 60px;
+            }
+            .feedback-box {
+                font-size: 15px;
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <h1>🧬 微生物 · 免疫</h1>
+            <span class="stats" id="progressStats">0 / 0</span>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-bar">
+            <div class="fill" id="progressFill"></div>
+        </div>
+
+        <!-- Chapter -->
+        <div class="chapter-tag" id="chapterTag">微生物学</div>
+
+        <!-- Question -->
+        <div class="question-number" id="qNum">第 1 题</div>
+        <div class="question-text" id="qText">加载题目中...</div>
+
+        <!-- Options -->
+        <div class="options-grid" id="optionsContainer"></div>
+
+        <!-- Feedback -->
+        <div class="feedback-box" id="feedbackBox"></div>
+
+        <!-- Nav -->
+        <div class="nav-bar">
+            <button class="nav-btn" id="prevBtn" disabled>
+                <span class="icon">‹</span> 上一题
+            </button>
+            <span class="question-counter" id="counterDisplay">1 / 1</span>
+            <button class="nav-btn primary" id="nextBtn">
+                下一题 <span class="icon">›</span>
+            </button>
+        </div>
+
+        <!-- Wrong Book Toggle -->
+        <div class="wrong-book-toggle">
+            <button class="wrong-book-btn" id="wrongToggle">
+                📕 错题本 <span class="badge" id="wrongBadge">0</span>
+            </button>
+        </div>
+
+        <!-- Wrong Panel -->
+        <div class="wrong-panel" id="wrongPanel">
+            <h3>📕 错题回顾</h3>
+            <div id="wrongList">
+                <div class="empty-msg">✨ 目前没有错题，继续保持！</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  题库数据：微生物学 + 免疫学 共 62 题（涵盖高频考点）
+        //  格式：{ id, chapter, q, options: [...], correct: 0-based }
+        // ============================================================
+        const QUESTIONS = [
+            // —— 微生物学 ——
+            { id: 1, chapter: '微生物学总论', q: '下列哪种微生物属于非细胞型微生物？', options: ['A. 细菌', 'B. 真菌', 'C. 病毒', 'D. 支原体'], correct: 2 },
+            { id: 2, chapter: '微生物学总论', q: '下列哪种微生物属于原核生物？', options: ['A. 真菌', 'B. 病毒', 'C. 细菌', 'D. 原生动物'], correct: 2 },
+            { id: 3, chapter: '微生物学总论', q: '原核细胞型微生物不包括下列哪项？', options: ['A. 细菌', 'B. 放线菌', 'C. 真菌', 'D. 支原体'], correct: 2 },
+            { id: 4, chapter: '微生物学总论', q: '组成病毒粒子核髓的化学物质是？', options: ['A. 糖类', 'B. 蛋白质', 'C. 核酸', 'D. 脂肪'], correct: 2 },
+            { id: 5, chapter: '微生物学总论', q: '病毒体的基本结构是？', options: ['A. 核心和衣壳', 'B. 核心、衣壳和包膜', 'C. 衣壳和包膜', 'D. 核心和包膜'], correct: 0 },
+            { id: 6, chapter: '微生物学总论', q: '能在无生命培养基上生长的最小微生物是？', options: ['A. 病毒', 'B. 支原体', 'C. 衣原体', 'D. 立克次体'], correct: 1 },
+
+            { id: 7, chapter: '细菌结构与染色', q: '革兰阳性菌细胞壁的主要成分是？', options: ['A. 肽聚糖', 'B. 脂多糖', 'C. 脂蛋白', 'D. 磷壁酸'], correct: 0 },
+            { id: 8, chapter: '细菌结构与染色', q: '革兰阴性菌细胞壁特有的成分是？', options: ['A. 肽聚糖', 'B. 几丁质', 'C. 脂多糖', 'D. 磷壁酸'], correct: 2 },
+            { id: 9, chapter: '细菌结构与染色', q: '革兰染色法在临床上常用于？', options: ['A. 鉴别细菌的血清型别', 'B. 协助临床选择用药', 'C. 诊断疾病', 'D. 判断细菌有无芽孢'], correct: 1 },
+            { id: 10, chapter: '细菌结构与染色', q: '下列哪种结构与细菌的致病性无关？', options: ['A. 荚膜', 'B. 鞭毛', 'C. 芽孢', 'D. 菌毛'], correct: 2 },
+            { id: 11, chapter: '细菌结构与染色', q: '细菌的繁殖方式主要是？', options: ['A. 出芽', 'B. 裂殖', 'C. 二分裂', 'D. 减数分裂'], correct: 2 },
+
+            { id: 12, chapter: '细菌的致病物质', q: '关于外毒素的叙述，下列哪项是错误的？', options: ['A. 是活菌释放至菌体外的一种蛋白质', 'B. 主要由革兰阳性菌产生', 'C. 性质稳定，耐热', 'D. 毒性强，引起特殊病变', 'E. 抗原性强'], correct: 2 },
+            { id: 13, chapter: '细菌的致病物质', q: '下列哪种细菌能够产生内毒素？', options: ['A. 铜绿假单胞菌', 'B. 葡萄球菌', 'C. 链球菌', 'D. 鼠疫杆菌'], correct: 0 },
+            { id: 14, chapter: '细菌的致病物质', q: '脂多糖（LPS）是细菌的？', options: ['A. 外毒素', 'B. 内毒素', 'C. 类毒素', 'D. 抗生素'], correct: 1 },
+            { id: 15, chapter: '细菌的致病物质', q: '病原菌侵入血流并在其中大量繁殖，造成机体严重损伤，称为？', options: ['A. 毒血症', 'B. 菌血症', 'C. 败血症', 'D. 脓毒血症'], correct: 2 },
+
+            { id: 16, chapter: '病毒学', q: '下列哪种病毒属于DNA病毒？', options: ['A. 流感病毒', 'B. 带状疱疹病毒', 'C. 艾滋病病毒（HIV）', 'D. 脊髓灰质炎病毒'], correct: 1 },
+            { id: 17, chapter: '病毒学', q: '下列哪种病毒的核酸类型为RNA？', options: ['A. 乙肝病毒', 'B. 巨细胞病毒', 'C. 流感病毒', 'D. 腺病毒'], correct: 2 },
+            { id: 18, chapter: '病毒学', q: '人类免疫缺陷病毒（HIV）主要攻击的免疫细胞是？', options: ['A. B淋巴细胞', 'B. T淋巴细胞（CD4⁺T细胞）', 'C. 巨噬细胞', 'D. 树突状细胞'], correct: 1 },
+            { id: 19, chapter: '病毒学', q: '病毒灭活的概念是？', options: ['A. 失去感染性', 'B. 失去抗原性', 'C. 失去血凝特性', 'D. 失去遗传特性'], correct: 0 },
+
+            { id: 20, chapter: '消毒灭菌', q: '杀灭细菌芽孢最有效的方法是？', options: ['A. 煮沸法', 'B. 巴氏消毒法', 'C. 高压蒸汽灭菌法', 'D. 紫外线照射'], correct: 2 },
+            { id: 21, chapter: '消毒灭菌', q: '紫外线杀菌的主要机制是？', options: ['A. 破坏细菌细胞壁', 'B. 损伤细菌细胞膜', 'C. 干扰细菌蛋白质合成', 'D. 破坏细菌DNA结构'], correct: 3 },
+
+            { id: 22, chapter: '常见病原菌', q: '确认金黄色葡萄球菌是否具有凝固酶活性的实验方法是？', options: ['A. 鞭毛试验', 'B. 协同凝集试验', 'C. 凝固酶试验', 'D. 荚膜肿胀试验'], correct: 2 },
+            { id: 23, chapter: '常见病原菌', q: '下列哪种细菌是严格厌氧菌？', options: ['A. 大肠杆菌', 'B. 梭状芽孢杆菌', 'C. 肺炎克雷伯菌', 'D. 铜绿假单胞菌'], correct: 1 },
+            { id: 24, chapter: '常见病原菌', q: '下列哪种细菌属于革兰阳性菌？', options: ['A. 霍乱弧菌', 'B. 白喉棒杆菌', 'C. 铜绿假单胞菌', 'D. 肺炎克雷伯菌'], correct: 1 },
+            { id: 25, chapter: '常见病原菌', q: '下列哪种细菌属于革兰阴性菌？', options: ['A. 金黄色葡萄球菌', 'B. 大肠杆菌', 'C. 链球菌', 'D. 白色念珠菌'], correct: 1 },
+            { id: 26, chapter: '常见病原菌', q: '关于流脑（流行性脑脊髓膜炎）的叙述，下列哪一项是错误的？', options: ['A. 主要致病因素为内毒素', 'B. 主要通过飞沫传播', 'C. 人为唯一的传染源', 'D. 暴发型以儿童罹患为主', 'E. 95%以上由B群脑膜炎奈瑟菌引起'], correct: 4 },
+
+            // —— 免疫学 ——
+            { id: 27, chapter: '免疫学概述', q: '免疫的现代概念是？', options: ['A. 机体抗感染的防御功能', 'B. 机体清除自身损伤、衰老细胞的功能', 'C. 机体排除抗原性异物的功能', 'D. 机体识别和排除抗原性异物的功能', 'E. 机体清除自身突变细胞的功能'], correct: 3 },
+            { id: 28, chapter: '免疫学概述', q: '免疫系统的主要功能不包括？', options: ['A. 清除病原体', 'B. 识别和清除异常细胞', 'C. 维持内环境稳定', 'D. 调节内分泌'], correct: 3 },
+            { id: 29, chapter: '免疫学概述', q: '免疫系统的组成是？', options: ['A. 中枢免疫器官和周围免疫器官', 'B. 免疫细胞和免疫分子', 'C. 中枢免疫器官和免疫细胞', 'D. 免疫器官、免疫细胞和免疫分子'], correct: 3 },
+            { id: 30, chapter: '免疫学概述', q: '免疫监视功能低下时易发生？', options: ['A. 自身免疫病', 'B. 超敏反应', 'C. 肿瘤', 'D. 免疫缺陷病'], correct: 2 },
+            { id: 31, chapter: '免疫学概述', q: '病原微生物侵入机体后，首先激起的是？', options: ['A. 固有性免疫应答', 'B. 适应性免疫应答', 'C. 两者同时被激起', 'D. 以上都不是'], correct: 0 },
+
+            { id: 32, chapter: '免疫器官', q: '人类的中枢免疫器官是？', options: ['A. 胸腺和淋巴结', 'B. 骨髓和淋巴结', 'C. 骨髓和脾脏', 'D. 骨髓和胸腺'], correct: 3 },
+            { id: 33, chapter: '免疫器官', q: '人类免疫细胞分化成熟的场所是？', options: ['A. 淋巴结和胸腺', 'B. 淋巴结和骨髓', 'C. 骨髓和脾脏', 'D. 骨髓和胸腺'], correct: 3 },
+            { id: 34, chapter: '免疫器官', q: '人体最大的免疫器官是？', options: ['A. 肺', 'B. 肝', 'C. 脾脏', 'D. 肾'], correct: 2 },
+
+            { id: 35, chapter: '抗原与抗体', q: '抗原分子的特异性取决于？', options: ['A. 抗原分子量的大小', 'B. 抗原的物理性状', 'C. 抗原的种类', 'D. 抗原表面的特殊化学基团（表位）'], correct: 3 },
+            { id: 36, chapter: '抗原与抗体', q: '抗原分子表面与抗体特异性结合的化学基团称为？', options: ['A. 共同抗原', 'B. 类属抗原', 'C. 交叉抗原', 'D. 表位（抗原决定簇）'], correct: 3 },
+            { id: 37, chapter: '抗原与抗体', q: '只具有与抗体结合的能力，而单独不能诱导抗体产生的物质为？', options: ['A. 抗原', 'B. 免疫原', 'C. 完全抗原', 'D. 半抗原'], correct: 3 },
+            { id: 38, chapter: '抗原与抗体', q: '必须与蛋白质载体结合才具有免疫原性的是？', options: ['A. 半抗原', 'B. 佐剂', 'C. 耐受原', 'D. 变应原'], correct: 0 },
+            { id: 39, chapter: '抗原与抗体', q: '免疫球蛋白的基本结构是？', options: ['A. 由两条相同的重链和两条相同的轻链组成的四肽链结构', 'B. 由两条重链和两条轻链组成的四肽链结构', 'C. 由一条重链和一条轻链组成的二肽链结构', 'D. 由两条相同的重链组成的二肽链结构'], correct: 0 },
+            { id: 40, chapter: '抗原与抗体', q: '能通过胎盘的免疫球蛋白是？', options: ['A. IgM', 'B. IgA', 'C. IgG', 'D. IgE'], correct: 2 },
+            { id: 41, chapter: '抗原与抗体', q: '在人血清中含量最高的免疫球蛋白是？', options: ['A. IgM', 'B. IgA', 'C. IgG', 'D. IgE'], correct: 2 },
+            { id: 42, chapter: '抗原与抗体', q: '免疫球蛋白A（IgA）主要存在于？', options: ['A. 血液中', 'B. 胃肠道黏膜', 'C. 呼吸道黏膜', 'D. 泪液和唾液（分泌型IgA）'], correct: 3 },
+            { id: 43, chapter: '抗原与抗体', q: '合成分泌抗体的细胞是？', options: ['A. T细胞', 'B. B细胞', 'C. 浆细胞', 'D. NK细胞'], correct: 2 },
+            { id: 44, chapter: '抗原与抗体', q: '同种不同个体组织和细胞中存在的不同抗原被称为？', options: ['A. 异种抗原', 'B. 同种异体抗原', 'C. 自身抗原', 'D. 异嗜性抗原'], correct: 1 },
+            { id: 45, chapter: '抗原与抗体', q: '存在于不同种属之间的抗原称为？', options: ['A. 类属抗原', 'B. 交叉抗原', 'C. 同种抗原', 'D. 异嗜性抗原'], correct: 3 },
+
+            { id: 46, chapter: '免疫细胞', q: '下列哪种细胞不属于免疫细胞？', options: ['A. T淋巴细胞', 'B. B淋巴细胞', 'C. 嗜中性粒细胞', 'D. 肝细胞'], correct: 3 },
+            { id: 47, chapter: '免疫细胞', q: '下列哪种细胞不属于固有免疫细胞？', options: ['A. 巨噬细胞', 'B. T细胞', 'C. 中性粒细胞', 'D. 自然杀伤细胞（NK细胞）'], correct: 1 },
+            { id: 48, chapter: '免疫细胞', q: '担负体液免疫功能的细胞是？', options: ['A. T细胞', 'B. K细胞', 'C. B细胞', 'D. NK细胞'], correct: 2 },
+            { id: 49, chapter: '免疫细胞', q: '担负细胞免疫功能的细胞是？', options: ['A. T细胞', 'B. K细胞', 'C. B细胞', 'D. NK细胞'], correct: 0 },
+            { id: 50, chapter: '免疫细胞', q: '效应T细胞主要介导哪种免疫反应？', options: ['A. 细胞毒性T细胞反应', 'B. 抗体依赖性细胞毒性反应', 'C. 产生细胞因子的T细胞反应', 'D. 免疫调节反应'], correct: 0 },
+            { id: 51, chapter: '免疫细胞', q: '下列哪种免疫细胞能够直接识别并杀死被病毒感染的细胞？', options: ['A. B细胞', 'B. T细胞（细胞毒性T细胞）', 'C. 自然杀伤细胞（NK细胞）', 'D. 巨噬细胞'], correct: 1 },
+
+            { id: 52, chapter: '补体系统', q: '补体经典激活途径中形成的C3转化酶是？', options: ['A. C4b2a', 'B. C4b2a3b', 'C. C3bBb', 'D. C3bBbP'], correct: 0 },
+            { id: 53, chapter: '补体系统', q: '补体激活后形成的膜攻击复合物是？', options: ['A. C3b', 'B. C4b2a', 'C. C5b6789', 'D. C3bBb'], correct: 2 },
+            { id: 54, chapter: '补体系统', q: '关于补体的生物学活性，下列哪一项是错误的？', options: ['A. 具有溶菌、杀菌作用', 'B. 具有免疫调节作用', 'C. 具有免疫黏附作用', 'D. 有趋化功能', 'E. 能促进抗体大量合成'], correct: 4 },
+            { id: 55, chapter: '补体系统', q: '人体内主要的补体激活途径是？', options: ['A. 替代途径', 'B. 凝集素途径', 'C. 经典途径', 'D. 以上都是'], correct: 3 },
+
+            { id: 56, chapter: '细胞因子与HLA', q: '下列哪种细胞因子具有抗病毒作用？', options: ['A. IL-1', 'B. TNF', 'C. IFN（干扰素）', 'D. IL-2'], correct: 2 },
+            { id: 57, chapter: '细胞因子与HLA', q: '下列哪种细胞因子主要参与炎症反应？', options: ['A. IL-4', 'B. IL-10', 'C. TNF-α', 'D. IL-2'], correct: 2 },
+            { id: 58, chapter: '细胞因子与HLA', q: 'HLA-I类分子主要提呈？', options: ['A. 外源性抗原', 'B. 内源性抗原', 'C. 肿瘤相关抗原', 'D. 超抗原'], correct: 1 },
+
+            { id: 59, chapter: '超敏反应', q: '下列哪种抗体是介导Ⅰ型超敏反应的主要抗体？', options: ['A. IgG', 'B. IgA', 'C. IgE', 'D. IgM'], correct: 2 },
+            { id: 60, chapter: '超敏反应', q: '类风湿因子（RF）主要与哪种疾病相关？', options: ['A. 系统性红斑狼疮', 'B. 类风湿关节炎', 'C. 甲状腺功能亢进', 'D. 糖尿病'], correct: 1 },
+
+            { id: 61, chapter: '疫苗', q: '疫苗免疫的原理是？', options: ['A. 激活T细胞介导的细胞免疫', 'B. 产生大量抗体', 'C. 增强免疫记忆', 'D. 抑制免疫系统'], correct: 2 },
+            { id: 62, chapter: '疫苗', q: '下列哪种疫苗属于减毒活疫苗？', options: ['A. 乙肝疫苗', 'B. 破伤风疫苗', 'C. 麻疹疫苗', 'D. 脊髓灰质炎疫苗（灭活版）'], correct: 2 }
+        ];
+
+        // ============================================================
+        //  应用逻辑
+        // ============================================================
+        const state = {
+            current: 0,
+            answered: new Array(QUESTIONS.length).fill(false),
+            selected: new Array(QUESTIONS.length).fill(null),
+            wrongIds: new Set(),
+            wrongList: []
+        };
+
+        // DOM 缓存
+        const $ = id => document.getElementById(id);
+        const qNum = $('qNum');
+        const qText = $('qText');
+        const optionsContainer = $('optionsContainer');
+        const feedbackBox = $('feedbackBox');
+        const prevBtn = $('prevBtn');
+        const nextBtn = $('nextBtn');
+        const counterDisplay = $('counterDisplay');
+        const progressFill = $('progressFill');
+        const progressStats = $('progressStats');
+        const chapterTag = $('chapterTag');
+        const wrongToggle = $('wrongToggle');
+        const wrongPanel = $('wrongPanel');
+        const wrongList = $('wrongList');
+        const wrongBadge = $('wrongBadge');
+
+        const labels = ['A', 'B', 'C', 'D', 'E'];
+
+        function renderQuestion(index) {
+            const q = QUESTIONS[index];
+            if (!q) return;
+
+            chapterTag.textContent = q.chapter;
+            qNum.textContent = `第 ${q.id} 题`;
+            qText.textContent = q.q;
+
+            const isAnswered = state.answered[index];
+            const selectedIdx = state.selected[index];
+
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = 'option-item';
+                if (isAnswered) div.classList.add('disabled');
+
+                if (isAnswered) {
+                    if (idx === q.correct) {
+                        div.classList.add('correct');
+                    } else if (idx === selectedIdx && idx !== q.correct) {
+                        div.classList.add('wrong');
+                    }
+                }
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'label';
+                labelSpan.textContent = labels[idx] || '';
+
+                const textSpan = document.createElement('span');
+                textSpan.className = 'text';
+                textSpan.textContent = opt;
+
+                div.appendChild(labelSpan);
+                div.appendChild(textSpan);
+
+                if (!isAnswered) {
+                    div.addEventListener('click', () => handleOptionClick(index, idx));
+                }
+
+                optionsContainer.appendChild(div);
+            });
+
+            // Feedback
+            if (isAnswered) {
+                const isCorrect = selectedIdx === q.correct;
+                feedbackBox.className = `feedback-box show ${isCorrect ? 'correct' : 'wrong'}`;
+                feedbackBox.textContent = isCorrect ?
+                    '✅ 回答正确！' :
+                    `❌ 正确答案是 ${labels[q.correct]}`;
+            } else {
+                feedbackBox.className = 'feedback-box';
+                feedbackBox.textContent = '';
+            }
+
+            counterDisplay.textContent = `${index + 1} / ${QUESTIONS.length}`;
+            const progress = ((index + 1) / QUESTIONS.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressStats.textContent = `${index + 1} / ${QUESTIONS.length}`;
+
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === QUESTIONS.length - 1;
+
+            updateWrongBadge();
+        }
+
+        function handleOptionClick(index, selectedIdx) {
+            if (state.answered[index]) return;
+            const q = QUESTIONS[index];
+            state.answered[index] = true;
+            state.selected[index] = selectedIdx;
+
+            const isCorrect = selectedIdx === q.correct;
+
+            if (!isCorrect) {
+                const id = q.id;
+                if (!state.wrongIds.has(id)) {
+                    state.wrongIds.add(id);
+                    state.wrongList.push(q);
+                }
+            } else {
+                const id = q.id;
+                if (state.wrongIds.has(id)) {
+                    state.wrongIds.delete(id);
+                    state.wrongList = state.wrongList.filter(item => item.id !== id);
+                }
+            }
+
+            renderQuestion(index);
+            renderWrongList();
+            updateWrongBadge();
+        }
+
+        function goPrev() {
+            if (state.current > 0) {
+                state.current--;
+                renderQuestion(state.current);
+            }
+        }
+
+        function goNext() {
+            if (state.current < QUESTIONS.length - 1) {
+                state.current++;
+                renderQuestion(state.current);
+            }
+        }
+
+        function renderWrongList() {
+            if (state.wrongList.length === 0) {
+                wrongList.innerHTML = `<div class="empty-msg">✨ 没有错题，继续保持！</div>`;
+                return;
+            }
+            let html = '';
+            state.wrongList.forEach(q => {
+                html += `
+                    <div class="wrong-item" data-id="${q.id}">
+                        <span class="q-idx">#${q.id}</span>
+                        <span class="q-preview">${q.q.slice(0, 50)}${q.q.length > 50 ? '…' : ''}</span>
+                        <button class="remove-btn" data-id="${q.id}" title="移除">✕</button>
+                    </div>
+                `;
+            });
+            wrongList.innerHTML = html;
+
+            wrongList.querySelectorAll('.wrong-item').forEach(el => {
+                const id = parseInt(el.dataset.id);
+                el.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-btn')) return;
+                    const idx = QUESTIONS.findIndex(q => q.id === id);
+                    if (idx !== -1) {
+                        state.current = idx;
+                        renderQuestion(idx);
+                        wrongPanel.classList.remove('open');
+                    }
+                });
+            });
+
+            wrongList.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    state.wrongIds.delete(id);
+                    state.wrongList = state.wrongList.filter(q => q.id !== id);
+                    renderWrongList();
+                    updateWrongBadge();
+                    renderQuestion(state.current);
+                });
+            });
+        }
+
+        function updateWrongBadge() {
+            const count = state.wrongIds.size;
+            wrongBadge.textContent = count;
+            wrongBadge.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+
+        // 事件绑定
+        prevBtn.addEventListener('click', goPrev);
+        nextBtn.addEventListener('click', goNext);
+
+        wrongToggle.addEventListener('click', () => {
+            wrongPanel.classList.toggle('open');
+            if (wrongPanel.classList.contains('open')) {
+                renderWrongList();
+            }
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') goPrev();
+            if (e.key === 'ArrowRight') goNext();
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= 5) {
+                const idx = num - 1;
+                const q = QUESTIONS[state.current];
+                if (q && q.options && idx < q.options.length && !state.answered[state.current]) {
+                    handleOptionClick(state.current, idx);
+                }
+            }
+        });
+
+        // 初始化
+        renderQuestion(0);
+        renderWrongList();
+        updateWrongBadge();
+        console.log('✅ 微生物与免疫题库加载完成，共 62 题。祝考试顺利！');
+    </script>
+</body>
+</html>
